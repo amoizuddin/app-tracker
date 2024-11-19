@@ -1,8 +1,10 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from sqlalchemy import select
 from database import engine
 from models import job_applications
+from datetime import datetime
+from typing import Literal
 
 app = FastAPI()
 
@@ -11,7 +13,7 @@ class JobApplication(BaseModel):
     company_name: str
     position: str
     date_applied: str
-    status: str = "Applied"
+    status: Literal["Applied", "Interviewing", "Offer Received", "Rejected", "Ghosted"]
     notes: str = None
 
 @app.get("/")
@@ -22,37 +24,54 @@ def root():
 async def get_all_applications():
     query = select(job_applications)
     with engine.connect() as conn:
-        results = conn.execute(query).fetchall()
-    return [dict(result) for result in results]
+        results = conn.execute(query).mappings().all()
+    return results
 
 @app.get("/applications/{application_id}")
 async def get_application(application_id: int):
     query = select(job_applications).where(job_applications.c.id == application_id)
     with engine.connect() as conn:
-        result = conn.execute(query).fetchone()
+        result = conn.execute(query).mappings().first()
     if result is None:
         raise HTTPException(status_code=404, detail="Job Application not found")
     return dict(result)
 
 @app.post("/applications/")
 async def add_application(application: JobApplication):
-    query = job_applications.insert().values(**application.model_dump())
-    with engine.connect() as conn:
-        conn.execute(query)
-    return {"message": "Job App added successfully"}
+    """
+    Add a new job application.
+    """
+    try:
+        # Convert date_applied to datetime object
+        application_data = application.model_dump()
+        application_data["date_applied"] = datetime.strptime(application.date_applied, "%Y-%m-%d")
+
+        # Insert into the database
+        query = job_applications.insert().values(**application_data)
+        with engine.begin() as conn:  # Use begin() for context management
+            conn.execute(query)
+        return {"message": "Application added successfully"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @app.put("/applications/{application_id}")
 async def update_application(application: JobApplication, application_id: int):
     query = select(job_applications).where(job_applications.c.id == application_id)
     with engine.connect() as conn:
-        result = conn.execute(query).fetchone()
+        result = conn.execute(query).mappings().first()
         if result == None:
             raise HTTPException(status_code=404, detail="job app not found")
         
+    try:
+        updated_data = application.model_dump()
+        updated_data["date_applied"]= datetime.strptime(application.date_applied, "%Y-%m-%d")
         update_query = (
             job_applications.update()
             .where(job_applications.c.id == application_id)
-            .values(**application.model_dump())
+            .values(**updated_data)
         )
-        conn.execute(update_query)
-    return {"message": "Job App updated successfully"}
+        with engine.begin() as conn:
+            conn.execute(update_query)
+        return {"message": "Job App updated successfully"}
+    except ValueError:
+        raise HTTPException(status_code=400, detail="invalid date format use YYYY-MM-DD")
