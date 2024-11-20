@@ -1,12 +1,22 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, field_validator
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from database import engine
 from models import job_applications
 from datetime import datetime
 from typing import Literal
 
 app = FastAPI()
+
+#adding cors middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8080"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 #request and response model
 class JobApplication(BaseModel):
@@ -75,3 +85,17 @@ async def update_application(application: JobApplication, application_id: int):
         return {"message": "Job App updated successfully"}
     except ValueError:
         raise HTTPException(status_code=400, detail="invalid date format use YYYY-MM-DD")
+    
+@app.delete("/applications/{application_id}")
+async def delete_application(application_id: int):
+    query = delete(job_applications).where(job_applications.c.id == application_id)
+
+    with engine.begin() as conn:
+        result = conn.execute(query)
+
+    if result.rowcount == 0:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Job application with ID {application_id} not found"
+        )
+    return {"message": f"job application with ID {application_id} deleted successfully"}
