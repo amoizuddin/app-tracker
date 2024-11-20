@@ -58,6 +58,6 @@ td {
 }
 
 th {
-  background-color: #f4f4f4;
+  background-color: #a0a0a0;
 }
 </style>
