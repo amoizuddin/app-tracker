@@ -1,30 +1,53 @@
 <template>
-  <div>
-    <h1>Dashboard</h1>
-    <TableComponent :applications="applications" @edit="editApplication" />
-  </div>
+  <v-container>
+    <v-card class="mx-auto" max-width="800">
+      <v-data-table
+        :headers="headers"
+        :items="applications"
+        item-value="id"
+        class="elevation-1"
+        dense
+      >
+        <template v-slot:[`item.actions`]="{ item }">
+          <v-btn
+            prepend-icon="mdi-pencil"
+            variant="tonal"
+            size="x-small"
+            @click="editApplication(item.id)"
+          >
+            edit
+          </v-btn>
+          <v-btn
+            prepend-icon="mdi-delete"
+            variant="tonal"
+            size="x-small"
+            @click="deleteApplication(item.id)"
+          >
+            delete
+          </v-btn>
+        </template>
+      </v-data-table>
+    </v-card>
+  </v-container>
 </template>
 
 <script lang="ts">
-import TableComponent from "@/components/TableComponent.vue";
 import { defineComponent, ref, onMounted } from "vue";
 import axios from "axios";
 
 export default defineComponent({
   name: "DashboardPage",
-  components: {
-    TableComponent,
-  },
   setup() {
-    const applications = ref<
-      Array<{
-        id: number;
-        company_name: string;
-        position: string;
-        status: string;
-        date_applied: string;
-      }>
-    >([]);
+    const headers = ref([
+      { text: "Company Name", value: "company_name" },
+      { text: "Position", value: "position" },
+      { text: "Status", value: "status" },
+      { text: "Date Applied", value: "date_applied" },
+      { text: "Actions", value: "actions", sortable: false },
+    ]);
+
+    const applications = ref([]);
+
     const fetchApplications = async () => {
       try {
         //DB_FLAG: DATABASE CALL
@@ -35,15 +58,27 @@ export default defineComponent({
         console.error("Failed to fetch applications:", error);
       }
     };
+    /*
     const editApplication = (id: number) => {
       console.log("Edit Application:", id);
       //redirect to edit page
       window.location.href = `/edit/${id}`;
     };
+    const deleteApplication = async (id: number) => {
+      try {
+        await axios.delete(`http://127.0.0.1:8000/applications/${id}`);
+        fetchApplications();
+      } catch (error) {
+        console.error(`Failed to delete application with ID ${id}`, error);
+      }
+    }; */
+
     onMounted(fetchApplications);
     return {
+      headers,
       applications,
-      editApplication,
+      //deleteApplication,
+      // editApplication,
     };
   },
 });
