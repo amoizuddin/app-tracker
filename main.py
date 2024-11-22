@@ -23,7 +23,7 @@ class JobApplication(BaseModel):
     company_name: str
     position: str
     date_applied: str
-    status: Literal["Applied", "Interviewing", "Offer Received", "Rejected", "Ghosted"]
+    status: Literal["Applied", "Interviewing", "Offer", "Rejected", "Ghosted"]
     notes: str = None
 
 @app.get("/")
