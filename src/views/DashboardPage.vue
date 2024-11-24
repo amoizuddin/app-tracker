@@ -1,17 +1,8 @@
 <template>
   <v-container>
-    <v-app-bar :elevation="0">
-      <template v-slot:prepend> </template>
-
-      <v-app-bar-title>Job App Tracker</v-app-bar-title>
-      <template v-slot:append>
-        <v-btn>Add</v-btn>
-      </template>
-    </v-app-bar>
     <v-card
-      title="Job Applications"
       class="mx-auto"
-      variant="outline"
+      variant="elevated"
       max-width="75%"
       max-height="75%"
       elevation="10"
@@ -24,6 +15,8 @@
         class="elevation-1"
         density="compact"
         fixed-header
+        height="80vh"
+        :items-per-page="50"
       >
         <template v-slot:[`item.date_applied`]="{ item }">
           {{ formatDate(item.date_applied) }}
@@ -41,6 +34,7 @@
             location="left center"
             transition="fade-transition"
             width="10%"
+            style="margin-right: 16px"
           >
             <template v-slot:activator="{ props: activatorProps }">
               <v-fab
@@ -58,7 +52,7 @@
               size="small"
               variant="flat"
               density="compact"
-              @click="editAppliaction(item.id)"
+              @click="editApplication(item.id)"
             ></v-btn>
             <v-btn
               key="2"
@@ -69,24 +63,6 @@
               @click="deleteApplication(item.id)"
             ></v-btn>
           </v-speed-dial>
-          <!--
-          <v-btn
-            prepend-icon="mdi-pencil"
-            variant="tonal"
-            size="x-small"
-            @click="editApplication(item.id)"
-          >
-            edit
-          </v-btn>
-          <v-btn
-            prepend-icon="mdi-delete"
-            variant="tonal"
-            size="x-small"
-            @click="deleteApplication(item.id)"
-          >
-            delete
-          </v-btn>
-          -->
         </template>
       </v-data-table>
     </v-card>
@@ -95,7 +71,16 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import axios from "axios";
+
+interface Application {
+  id: number;
+  company_name: string;
+  position: string;
+  status: string;
+  date_applied: string;
+}
 
 export default defineComponent({
   name: "DashboardPage",
@@ -108,7 +93,8 @@ export default defineComponent({
       { key: "actions", value: "actions", sortable: false },
     ]);
 
-    const applications = ref([]);
+    const applications = ref<Application[]>([]);
+    const router = useRouter();
 
     const fetchApplications = async () => {
       try {
@@ -128,23 +114,6 @@ export default defineComponent({
         date
       );
     };
-    /*
-    const getRowClass = (item: any): string => {
-      console.log("getRowClass called");
-      switch (item.status.toLowerCase()) {
-        case "interviewing":
-          return "row-yellow";
-        case "rejected":
-          return "row-red";
-        case "ghosted":
-          return "row-grey";
-        case "offer":
-          return "row-green";
-        default:
-          return "";
-      }
-    };
-    */
     const getStatusClass = (status: string) => {
       switch (status.toLowerCase()) {
         case "interviewing":
@@ -160,11 +129,11 @@ export default defineComponent({
       }
     };
 
-    /*
     const editApplication = (id: number) => {
       console.log("Edit Application:", id);
       //redirect to edit page
-      window.location.href = `/edit/${id}`;
+      //window.location.href = `/edit/${id}`;
+      router.push(`/edit/${id}`);
     };
     const deleteApplication = async (id: number) => {
       try {
@@ -173,7 +142,7 @@ export default defineComponent({
       } catch (error) {
         console.error(`Failed to delete application with ID ${id}`, error);
       }
-    }; */
+    };
 
     onMounted(fetchApplications);
     return {
@@ -183,27 +152,11 @@ export default defineComponent({
       //getRowClass,
       //search: "",
       getStatusClass,
-      //deleteApplication,
-      // editApplication,
+      deleteApplication,
+      editApplication,
     };
   },
 });
 </script>
 
-<style>
-.row-yellow {
-  color: #fdd835 !important; /* Yellow */
-}
-
-.row-green {
-  color: #4caf50; /* Green */
-}
-
-.row-red {
-  color: #f44336; /* Red */
-}
-
-.row-grey {
-  color: #9e9e9e; /* Grey */
-}
-</style>
+<style></style>

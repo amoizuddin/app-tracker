@@ -16,6 +16,11 @@ const routes: Array<RouteRecordRaw> = [
     name: "EditApplication",
     component: () => import("../views/EditApplicationPage.vue"),
   },
+  {
+    path: "/stats/",
+    name: "StatsPage",
+    component: () => import("../views/StatsPage.vue"),
+  },
 ];
 
 const router = createRouter({

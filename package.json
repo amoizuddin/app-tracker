@@ -11,9 +11,12 @@
     "@mdi/font": "^7.4.47",
     "axios": "^1.7.7",
     "core-js": "^3.8.3",
+    "echarts": "^5.5.1",
+    "vee-validate": "^4.14.7",
     "vue": "^3.2.13",
     "vue-router": "^4.0.3",
-    "vuetify": "^3.7.4"
+    "vuetify": "^3.7.4",
+    "yup": "^1.4.0"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.4.0",
