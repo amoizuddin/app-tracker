@@ -2,8 +2,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, field_validator
 from sqlalchemy import select, delete
-from database import engine
-from models import job_applications
+from db.database import engine
+from db.models import job_applications
 from datetime import datetime
 from typing import Literal
 
