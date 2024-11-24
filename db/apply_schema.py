@@ -1,4 +1,3 @@
-
 from database import engine, metadata
 from models import job_applications
 
