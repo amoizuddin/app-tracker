@@ -1,0 +1,20 @@
+source env/bin/activate
+pip install -r requirements.txt
+
+start/stop postgres:
+brew services start postgresql
+brew services stop postgresql
+
+
+accessing postgres shel:
+psql postgres
+
+quit postgres shell:
+\q
+
+start backend server:
+uvicorn main:app --reload --host 127.0.0.1 --port 8000
+
+start front end server:
+npm run server
+
